@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://kit.fontawesome.com/dd9d1532fc.js" crossorigin="anonymous"></script>
+    <title>Meal Plan Generator</title>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="StyleSheet.css">
+  </head>
+  <body>
+    <header>
+      <a href="home.html">
+        <img src="images/company.png"  style="width:200px;height:60px;">
+      </a>
+
+
+    </header>
+    <div id="navbar">
+        <ul>
+          <li><a href="mealprep.html">Meal Prep</a></li>
+          <li><a href="Bulking.html">Bulking</a></li>
+          <li><a href="cutting.html">Cutting</a></li>
+          <li><a href="mealplan.html">Meal Plan Generator</a></li>
+        </ul>
+    </div>
+    <main>
+      <h2>Plan your meals, fuel your body, own your health!</h2>
+      <div id="meal-plan-blurb">
+      <p>We have you covered whether you want to lose weight, gain muscle or try something new. Our meal plan generator can provide you with a variety of new recipes to try.</p>
+      </div>
+      <form id="meal-plan-form">
+
+        <label for="dietary-requirements">Dietary Requirements:</label>
+        <div id="radio-buttons">
+        <br>
+        <label>
+
+          <input type="radio" name="dietary-requirements" value="vegetarian" style="display:none;">
+          <img src="images/cabbage.png" alt="Vegetarian" width="100">
+
+          <p>VEGETARIAN</p>
+        </label>
+        <label>
+          <input type="radio" name="dietary-requirements" value="vegan" style="display:none;">
+          <img src="images/vegan.png" alt="Vegan" width="100">
+
+          <p>VEGAN</p>
+        </label>
+        <label>
+          <input type="radio" name="dietary-requirements" value="omnivore" style="display:none;">
+          <img src="images/balanced-diet.png" alt="omnivore" width="100">
+
+          <p>BALANCED</p>
+        </label>
+        <label>
+          <input type="radio" name="dietary-requirements" value="paleo" style="display:none;">
+          <img src="images/paleolithic.png" alt="Paleo" width="100">
+
+          <p>PALEO</p>
+        </label>
+        <label>
+          <input type="radio" name="dietary-requirements" value="keto" style="display:none;">
+          <img src="images/keto.png" alt="Keto" width="100">
+
+          <p>KETO</p>
+        </label>
+        </div>
+        <br>
+        
+        <h4>Calories</h4>
+        
+        <input id="calories" type="range" min="1000" max="2800" step="100" />
+        <p>Value: <output id="value"></output></p>
+        
+        <button type="button" id="generate-btn" style="color:white;background-color:#bc2fbc;">Generate</button>
+      </form>
+
+
+    <div id="meals-container"></div>
+    
+    <script>
+      const value = document.querySelector("#value")
+      const input = document.querySelector("#calories")
+      value.textContent = input.value
+      input.addEventListener("input", (event) => {
+      value.textContent = event.target.value
+      })
+    </script>
+
+
+    <script>
+      const form = document.querySelector('form');
+
+
+      const generateBtn = document.querySelector("#generate-btn");
+      const mealsContainer = document.querySelector("#meals-container");
+
+      generateBtn.addEventListener("click", () => {
+        const selectedDiet = form.elements["dietary-requirements"].value;
+        const targetCalories = form.elements["calories"].value;
+        
+        const url = `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/mealplans/generate?timeFrame=day&targetCalories=${targetCalories}&diet=${selectedDiet}`;
+
+      const options ={
+          method: 'GET',
+          headers: {
+            "X-RapidAPI-Key": "1ad78e51bcmsh63d2e92fab329e3p1a1cbcjsn6bd431a6e496",
+            "X-RapidAPI-Host": "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",
+          },
+        }
+        
+        fetch(url, options)
+          .then((response) => response.json())
+          .then((data) => {
+            const meals = data.meals;
+            const nut = data.nutrients;
+            mealsContainer.innerHTML = "";
+            const nutrientsList = 
+             `
+            
+              
+
+
+             
+              <div class="meal-card">
+              <h3> Here is a randomely generated meal plan based on your diet needs</h3>
+              <h4> Nutritional values for the meal plan</h4>
+              <h4>Calories : ${nut.calories}</h4>
+              <h4>Fat : ${nut.fat}</h4>
+              <h4>Protein : ${nut.protein}</h4>
+              <h4>Carbohydrates : ${nut.carbohydrates}</h4>
+              </div>`
+            
+            mealsContainer.innerHTML += nutrientsList
+          
+
+            
+            
+            
+            meals.forEach((meal) => {
+              const mealId = meal.id
+
+
+
+              fetch(`https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${mealId}/information`, options)
+                .then(response => response.json())
+                .then(data => {
+                  const mealImage = data.image;
+                  const mealSummary = data.instructions;
+
+
+                  const mealCard = `
+                    <div class="meal-card">
+                      <h3>${meal.title}</h3>
+                      <img src="${mealImage}" alt="unlucky">
+                      <p> ${mealSummary} <p>
+                      
+                      <p>Ready in : ${meal.readyInMinutes} minutes </p>
+                      
+
+                    </div>
+              `;
+              mealsContainer.innerHTML += mealCard;
+            });
+
+          
+          
+
+          })
+          .catch((error) => {
+            mealsContainer.innerHTML = `<p>Failed to generate meal plan: ${error.message}</p>`;
+          });
+      });
+    });
+
+      </script>
+
+    <script src="stickynav.js"></script>
+    </body>
+</html>
